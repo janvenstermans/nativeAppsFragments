@@ -12,7 +12,7 @@ public class ParadoxDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_paradox_detail);
         ParadoxDescriptionFragment descriptionFragment = (ParadoxDescriptionFragment)
-                getSupportFragmentManager().findFragmentById(R.id.paradox_description);
+                getFragmentManager().findFragmentById(R.id.paradox_description);
 
         if (savedInstanceState == null) {
             int selectedIndex = getIntent().getExtras().getInt("index");

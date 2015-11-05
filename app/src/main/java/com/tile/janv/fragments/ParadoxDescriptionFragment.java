@@ -1,8 +1,8 @@
 package com.tile.janv.fragments;
 
 
+import android.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +20,13 @@ public class ParadoxDescriptionFragment extends Fragment {
     public ParadoxDescriptionFragment() {
         // Required empty public constructor
         setArguments(new Bundle());
+    }
+
+    public static ParadoxDescriptionFragment newInstance(int index) {
+        ParadoxDescriptionFragment newFragment = new ParadoxDescriptionFragment();
+        String description = Paradoxes.ParadoxDescription[index];
+        newFragment.getArguments().putString(Constants.PARADOX_DESCRIPTION_TEXT, description);
+        return newFragment;
     }
 
     @Override
