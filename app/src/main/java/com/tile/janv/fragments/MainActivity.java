@@ -1,24 +1,52 @@
 package com.tile.janv.fragments;
 
-import android.app.FragmentTransaction;
-import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
+import android.widget.FrameLayout;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity implements OnParadoxSelectedListener {
 
-    private boolean largeMode;
+    @Nullable //does not have to find this
+    @Bind(R.id.paradox_frame_layout)
+    protected FrameLayout singlePaneLayout;
+
+    private ParadoxListFragment paradoxListFragment;
+    private ParadoxDescriptionFragment paradoxDescriptionFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.paradoxes);
-        //paradox_description
-        View descriptionFrameLayout = findViewById(R.id.paradox_description_frame_layout);
-        largeMode = descriptionFrameLayout != null && descriptionFrameLayout.getVisibility() == View.VISIBLE;
+        ButterKnife.bind(this);
+        paradoxDescriptionFragment = (ParadoxDescriptionFragment)
+                getSupportFragmentManager().findFragmentById(R.id.paradox_description_fragment);
+
+        if (singlePaneLayout != null) {
+            Log.i(Constants.TAG, "single pane layout");
+            // However, if we're being restored from a previous state,
+            // then we don't need to do anything and should return or else
+            // we could end up with overlapping fragments.
+            if (savedInstanceState != null) {
+                return;
+            }
+
+            // Create an instance of ParadoxListFragment
+            ParadoxListFragment paradoxListFragment = new ParadoxListFragment();
+            paradoxListFragment.setArguments(getIntent().getExtras());
+
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.paradox_frame_layout, paradoxListFragment).commit();
+            Log.i(Constants.TAG, "ParadoxListFragment added to main layout");
+        } else {
+            Log.i(Constants.TAG, "two pane layout");
+        }
     }
 
     @Override
@@ -45,28 +73,19 @@ public class MainActivity extends AppCompatActivity implements OnParadoxSelected
 
     @Override
     public void paradoxSelected(int index) {
-        if (largeMode) {
-            // Code like in  http://developer.android.com/guide/components/fragments.html
-            ParadoxDescriptionFragment descriptionFragment = (ParadoxDescriptionFragment)
-                    getFragmentManager().findFragmentById(R.id.paradox_description_frame_layout);
-
-            // Make new fragment to show this selection.
-            descriptionFragment = ParadoxDescriptionFragment.newInstance(index);
-
-            // Execute a transaction, replacing any existing fragment
-            // with this one inside the frame.
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-            ft.replace(R.id.paradox_description_frame_layout, descriptionFragment);
-            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-            ft.commit();
-            // FIXME: leads to Exception:
-            // java.lang.IllegalStateException: The specified child already has a parent. You must call removeView() on the child's parent first.
+        if (paradoxDescriptionFragment != null) {
+            paradoxDescriptionFragment.updateDescriptionView(index);
+            Log.i(Constants.TAG, "ParadoxDescriptionFragment updated in two pane view");
         } else {
-            // create a new Activity
-            Intent intent = new Intent();
-            intent.setClass(this, ParadoxDetailActivity.class);
-            intent.putExtra("index", index);
-            startActivity(intent);
+            //create new fragment
+            ParadoxDescriptionFragment newFragment = ParadoxDescriptionFragment.getNewInstance(index);
+
+            getSupportFragmentManager().beginTransaction()
+                    //http://stackoverflow.com/questions/8876126/swap-fragment-in-an-activity-via-animation
+                    .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right)
+                    .replace(R.id.paradox_frame_layout, newFragment)
+                    .addToBackStack(null).commit();
+            Log.i(Constants.TAG, "ParadoxListFragment replaced by ParadoxDescriptionFragment in main layout single pane");
         }
     }
 }
