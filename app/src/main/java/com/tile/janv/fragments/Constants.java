@@ -5,5 +5,5 @@ package com.tile.janv.fragments;
  */
 public class Constants {
 
-    public static final String PARADOX_DESCRIPTION_TEXT = "PARADOX_DESCRIPTION_TEXT";
+    public static final String TAG = "Paradoxes";
 }
